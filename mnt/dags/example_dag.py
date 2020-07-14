@@ -8,7 +8,6 @@ from datetime import datetime, timedelta
 
 default_args = {
     'owner': 'airflow',
-    'start_date': datetime(2020, 1, 1),
     'retries': 3,
     'retry_delay': timedelta(seconds=30)
 }
@@ -16,6 +15,7 @@ default_args = {
 dag = DAG(
     dag_id='example_dag',
     description='Just an example DAG',
+    start_date=datetime(2020, 1, 1),
     schedule_interval='0 0 * * *',
     catchup=False,
     default_args=default_args
@@ -23,7 +23,7 @@ dag = DAG(
 
 # Operators: https://airflow.apache.org/docs/stable/_api/airflow/operators/index.html
 task_1 = BashOperator(
-    task_id='task_1',
+    task_id='task_one',
     bash_command='echo "Hello from task_1"',
     dag=dag
 )
