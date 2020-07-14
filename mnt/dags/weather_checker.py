@@ -3,6 +3,11 @@ This DAG uses the weather.gov API to generate a weather report for
 a pair of lat/long coordinates
 
 Info: https://weather-gov.github.io/api/general-faqs
+
+
+TODO:
+    - Make connection from Web UI (http_conn_id='http_weather_api')
+    - Add weather_coordinates variable to Variables from Web UI
 """
 import json
 import requests
@@ -14,7 +19,7 @@ from datetime import datetime, timedelta
 
 default_args = {
     'owner': 'airflow',
-    'retries': 1,
+    'retries': 0,
     'start_date': datetime(2020, 1, 1),
     'queue': 'weather_queue'
 }
@@ -23,6 +28,8 @@ dag = DAG(
     dag_id='weather_checker',
     description='Check the weather',
     schedule_interval='0 0 * * 1', # midnight on Mondays
+    default_args=default_args,
+    catchup=False
 )
 
 def parse_response(**context):
@@ -46,6 +53,23 @@ def parse_response(**context):
     # push the forecast url for the next task
     context.get('task_instance').xcom_push(key='forecast_url', value=forecast_url)
 
+def print_forecast(**context):
+    """
+    Prints the detailed weather forecast
+    """
+    # pull the forecase url using xcom
+    forecast_url = context.get('task_instance').xcom_pull(key='forecast_url')
+
+    # make the request and transform to a dictionary
+    response = requests.get(forecast_url).json()
+    assert 'properties' in response.keys()
+
+    # print out the forecast for the week
+    periods = response.get('properties').get('periods')
+    for period in periods:
+        print(f'{period.get("name")}: {period.get("detailedForecast")}')
+
+
 
 with dag: # new syntax, automatically associates all tasks to the above DAG
 
@@ -65,24 +89,10 @@ with dag: # new syntax, automatically associates all tasks to the above DAG
         do_xcom_push=True
     )
 
-    get_forecast = PythonOperator(
-        task_id='get_location_metadata',
-        python_callable=print_forecast
+    print_weekly_forecast = PythonOperator(
+        task_id='print_weekly_forecast',
+        python_callable=print_forecast,
+        provide_context=True
     )
 
-def print_forecast(**context):
-    """
-    Prints the detailed weather forecast
-    """
-
-    # pull the forecase url using xcom
-    forecast_url = context.get('task_instance').xcom_pull(key='forecast_url')
-
-    # make the request and transform to a dictionary
-    response = requests.get(forecast_url).json
-    assert 'detailedForecast' in response
-
-    # print out the forecast for the week
-    periods = response.get('properties').get('periods')
-    for period in periods:
-        print(f'{period.get("name")}: {period.get("detailedForecast")}')
+    get_location_metadata >> parse_metadata_response >> print_weekly_forecast
