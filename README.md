@@ -36,18 +36,6 @@ airflow list_tasks $DAG
 airflow test $DAG $TASK
 ```
 
-## Ad-Hoc Queries
-
-SQLite
-```sql
-select * from sqlite_master;
-```
-
-Postgres
-```sql
-select * from pg_catalog.pg_tables;
-```
-
 ## Installing Airflow with docker-compose
 
 ```
@@ -59,3 +47,18 @@ docker-compose up -d
 These are the differences between the config files:
 * executor = CeleryExecutor
 * sql_alchemy_conn = postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
+
+## Ad-Hoc Queries
+
+#### SQLite
+
+Connection = /usr/local/airflow/airflow.db
+```sql
+select * from sqlite_master;
+```
+
+#### Postgres
+
+```sql
+select * from pg_catalog.pg_tables;
+```
