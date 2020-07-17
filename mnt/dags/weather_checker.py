@@ -41,7 +41,7 @@ def parse_response(**context):
     # For learning purposes, let's see what is in the context
     print('========== START CONTEXT ==========')
     for key, val in context.items():
-        print(f'{key} => {val}')
+        print(key + ' => ' + val)
     print('========== END CONTEXT ==========')
 
     # pull metadata response from xcom
@@ -67,7 +67,9 @@ def print_forecast(**context):
     # print out the forecast for the week
     periods = response.get('properties').get('periods')
     for period in periods:
-        print(f'{period.get("name")}: {period.get("detailedForecast")}')
+        period_name = period.get('name')
+        forecast = period.get('detailedForecast')
+        print(period_name + ': ' + forecast)
 
 
 
