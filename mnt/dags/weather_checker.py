@@ -41,7 +41,7 @@ def parse_response(**context):
     # For learning purposes, let's see what is in the context
     print('========== START CONTEXT ==========')
     for key, val in context.items():
-        print(key + ' => ' + val)
+        print(str(key) + ' => ' + str(val))
     print('========== END CONTEXT ==========')
 
     # pull metadata response from xcom
@@ -74,7 +74,6 @@ def print_forecast(**context):
 
 
 with dag: # new syntax, automatically associates all tasks to the above DAG
-
     get_location_metadata = SimpleHttpOperator(
         task_id='get_location_metadata',
         http_conn_id='http_weather_api',
